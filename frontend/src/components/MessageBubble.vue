@@ -11,7 +11,7 @@
         <div class="message-content" v-html="renderedContent"></div>
 
         <!-- Streaming cursor -->
-        <span v-if="message.isStreaming" class="streaming-cursor">▊</span>
+        <span v-if="message.isStreaming" class="streaming-cursor"></span>
 
         <!-- Data quality caveats -->
         <CaveatBanner
@@ -53,12 +53,18 @@ const renderedContent = computed(() => {
 
 <style scoped>
 .streaming-cursor {
-  animation: blink 1s step-end infinite;
-  color: var(--primary);
-  font-weight: bold;
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--accent-light);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 1s step-end infinite;
+  border-radius: 1px;
 }
 
-@keyframes blink {
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 </style>

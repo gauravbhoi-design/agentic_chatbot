@@ -23,7 +23,7 @@
     </div>
 
     <!-- Messages list -->
-    <div v-else class="messages-container" ref="messagesRef">
+    <div v-else class="messages-container" ref="messagesRef" @scroll="onScroll">
       <MessageBubble
         v-for="(msg, idx) in chatStore.messages"
         :key="idx"
@@ -39,6 +39,17 @@
           </div>
         </div>
       </div>
+
+      <!-- Scroll-to-bottom button -->
+      <Transition name="scroll-btn">
+        <button
+          v-if="!isAtBottom && chatStore.hasMessages"
+          class="scroll-to-bottom"
+          @click="scrollToBottom"
+        >
+          &#x2193;
+        </button>
+      </Transition>
     </div>
 
     <!-- Chat input -->
@@ -74,6 +85,7 @@ const chatStore = useChatStore()
 const inputText = ref('')
 const messagesRef = ref(null)
 const inputRef = ref(null)
+const isAtBottom = ref(true)
 
 const suggestedQueries = [
   "How's our pipeline looking?",
@@ -100,6 +112,11 @@ function handleSuggested(query) {
   chatStore.send(query)
 }
 
+function onScroll(e) {
+  const { scrollTop, scrollHeight, clientHeight } = e.target
+  isAtBottom.value = scrollHeight - scrollTop - clientHeight < 80
+}
+
 // Auto-scroll on new messages
 watch(
   () => chatStore.messages.length,
@@ -113,14 +130,62 @@ watch(
 watch(
   () => latestAgentContent.value,
   async () => {
-    await nextTick()
-    scrollToBottom()
+    if (isAtBottom.value) {
+      await nextTick()
+      scrollToBottom()
+    }
   }
 )
 
 function scrollToBottom() {
   if (messagesRef.value) {
     messagesRef.value.scrollTop = messagesRef.value.scrollHeight
+    isAtBottom.value = true
   }
 }
 </script>
+
+<style scoped>
+.scroll-to-bottom {
+  position: sticky;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-300);
+  font-size: 16px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.scroll-to-bottom:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px var(--accent-glow);
+  transform: translateX(-50%) scale(1.1);
+}
+
+.scroll-btn-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-btn-leave-active {
+  transition: all 0.2s ease-in;
+}
+.scroll-btn-enter-from,
+.scroll-btn-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(16px) scale(0.8);
+}
+</style>

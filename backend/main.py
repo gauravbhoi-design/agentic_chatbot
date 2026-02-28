@@ -30,6 +30,10 @@ async def lifespan(app: FastAPI):
     print("Monday.com BI Agent starting up...")
     print(f"Deals Board ID: {DEALS_BOARD_ID}")
     print(f"Work Orders Board ID: {WORKORDERS_BOARD_ID}")
+    if FRONTEND_DIR.is_dir():
+        print(f"Serving frontend from: {FRONTEND_DIR}")
+    else:
+        print(f"Frontend not built yet ({FRONTEND_DIR}). Run: cd frontend && npm run build")
     yield
     print("Monday.com BI Agent shutting down...")
 
